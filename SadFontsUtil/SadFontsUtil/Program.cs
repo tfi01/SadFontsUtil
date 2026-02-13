@@ -79,6 +79,7 @@ class Program
         int charsFrom = 0;
         int charsTo = 255;
 
+        bool preview = false;
 
 
         #region Input handling - Font File Name
@@ -343,7 +344,6 @@ class Program
         }
         #endregion
 
-        bool preview = false;
 
         #region Input handling - Preview after generation?
         if (args.Contains("--preview"))
