@@ -3,34 +3,11 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Runtime.Versioning;
+using System.Text.Json;
 
 [SupportedOSPlatform("windows")]
 class Program
 {
-    static void GenerateSadConsoleFontFile(string fontFileName, string pngFileName, string fontName,
-    int glyphWidth, int glyphHeight, int glyphPadding, int columns)
-    {
-        //  .font file struct for SadConsole 
-        var fontConfig = new Dictionary<string, object>
-        {
-            ["$type"] = "SadConsole.SadFont, SadConsole",
-            ["Name"] = fontName,
-            ["FilePath"] = pngFileName,
-            ["GlyphWidth"] = glyphWidth,
-            ["GlyphHeight"] = glyphHeight,
-            ["GlyphPadding"] = glyphPadding,
-            ["Columns"] = columns,
-            ["SolidGlyphIndex"] = 219, // CP437 solid block 
-            ["IsSadExtended"] = false
-        };
-
-        string json = System.Text.Json.JsonSerializer.Serialize(fontConfig, new System.Text.Json.JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-
-        System.IO.File.WriteAllText(fontFileName, json);
-    }
 
 
     static void Main(string[] args)
@@ -61,7 +38,7 @@ class Program
             Console.WriteLine("  SadFontsUtil.exe --font font.ttf --grid 32x8 --gridcell 8x14 --gridlines --preview");
             Console.WriteLine();
             Console.WriteLine("Output:");
-            Console.WriteLine("  Generated PNG and .font file will be saved in the current directory.");           
+            Console.WriteLine("  Generated PNG and .font file will be saved in the current directory.");
         }
 
         // Default values
@@ -344,7 +321,6 @@ class Program
         }
         #endregion
 
-
         #region Input handling - Preview after generation?
         if (args.Contains("--preview"))
         {
@@ -443,11 +419,38 @@ class Program
         string fontName = System.IO.Path.GetFileNameWithoutExtension(fontPath);
         string outputPNGName = System.IO.Path.GetFileNameWithoutExtension(fontPath) + ".png";
         string outputFONTName = System.IO.Path.GetFileNameWithoutExtension(fontPath) + ".font";
-        bitmap.Save(outputPNGName, ImageFormat.Png);
-        bitmap.Dispose();
-        fontCollection.Dispose();
+        try
+        {
+            bitmap.Save(outputPNGName, ImageFormat.Png);
+            bitmap.Dispose();
+            fontCollection.Dispose();
+            Console.WriteLine($"Font metadata saved to {outputFONTName}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: Failed to save output files: {ex.Message}");
+            return;
+        }
 
-        GenerateSadConsoleFontFile(outputFONTName, outputPNGName, fontName, gridCellWidth, gridCellHeight, gridLineWidth, gridSizeX);
+        try
+        {
+            File.WriteAllText(outputFONTName, $@"{{
+  ""Name"": ""{fontName}"",
+  ""FilePath"": ""{outputPNGName}"",
+  ""GlyphHeight"": {gridCellHeight},
+  ""GlyphPadding"": {gridLineWidth},
+  ""GlyphWidth"": {gridCellWidth},
+  ""Columns"": {gridSizeX},
+  ""IsSadExtended"": true
+}}");
+            Console.WriteLine($"Font metadata saved to {outputFONTName}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: Failed to save font metadata file: {ex.Message}");
+            return;
+        }
+
 
         if (preview)
         {
@@ -466,6 +469,9 @@ class Program
             }
         }
 
-        Console.WriteLine($"Saved: {outputPNGName} ({imageWidth}x{imageHeight}px)");
+        Console.WriteLine($"\nPress any key...");
+        Console.ReadKey();
     }
+
+
 }
