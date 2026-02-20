@@ -1,4 +1,6 @@
 using Microsoft.Win32;
+using System.Diagnostics;
+using System.Drawing;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
@@ -8,6 +10,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using Brush = System.Drawing.Brush;
+using Brushes = System.Drawing.Brushes;
+using Color = System.Drawing.Color;
+using FontFamily = System.Drawing.FontFamily;
+using Pen = System.Drawing.Pen;
 
 namespace SadFontsUtilGUI;
 
@@ -25,6 +33,12 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         UpdatePreviewScale();
+    }
+
+    private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+        e.Handled = true;
     }
 
     private void BtnBrowse_Click(object sender, RoutedEventArgs e)
@@ -47,10 +61,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void SldPreviewScale_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-    {
-        // Prevent UI updates during drag for better performance
-    }
 
     private void SldPreviewScale_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
     {
@@ -85,6 +95,9 @@ public partial class MainWindow : Window
 
     private void GeneratePreview()
     {
+        _currentBitmap?.Dispose();
+        _currentBitmap = null;
+
         if (string.IsNullOrEmpty(_selectedFontPath) || !System.IO.File.Exists(_selectedFontPath))
         {
             MessageBox.Show("Please select a valid font file first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -138,68 +151,85 @@ public partial class MainWindow : Window
                 return;
             }
 
-            // Generate the font image
-            _currentBitmap = new System.Drawing.Bitmap(imageWidth, imageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            
 
-            using (var fontCollection = new PrivateFontCollection())
-            using (var g = System.Drawing.Graphics.FromImage(_currentBitmap))
+            PrivateFontCollection fontCollection = new PrivateFontCollection();
+            fontCollection.AddFontFile(_selectedFontPath);
+            FontFamily fontFamily = fontCollection.Families[0];
+            Bitmap bitmap = new Bitmap(imageWidth, imageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            using (Graphics g = Graphics.FromImage(bitmap))
             {
-                fontCollection.AddFontFile(_selectedFontPath);
-                var fontFamily = fontCollection.Families[0];
-
-                g.Clear(System.Drawing.Color.Transparent);
-                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+                g.Clear(Color.Transparent);
+                g.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
 
                 // Draw grid lines if enabled
                 if (gridLineWidth > 0)
                 {
-                    using (var gridPen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(128, 128, 255), gridLineWidth))
+                    Pen gridPen = new Pen(Color.FromArgb(128, 128, 255), gridLineWidth);
+                    for (int x = 0; x <= gridSizeX; x++)
                     {
-                        for (int x = 0; x <= gridSizeX; x++)
-                        {
-                            int xPos = x * (gridCellWidth + gridLineWidth);
-                            g.DrawLine(gridPen, xPos, 0, xPos, imageHeight - 1);
-                        }
-                        for (int y = 0; y <= gridSizeY; y++)
-                        {
-                            int yPos = y * (gridCellHeight + gridLineWidth);
-                            g.DrawLine(gridPen, 0, yPos, imageWidth - 1, yPos);
-                        }
+                        int xPos = x * (gridCellWidth + gridLineWidth);
+                        g.DrawLine(gridPen, xPos, 0, xPos, imageHeight - 1);
                     }
+
+                    for (int y = 0; y <= gridSizeY; y++)
+                    {
+                        int yPos = y * (gridCellHeight + gridLineWidth);
+                        g.DrawLine(gridPen, 0, yPos, imageWidth - 1, yPos);
+                    }
+                    gridPen.Dispose();
                 }
 
-                using (var font = new System.Drawing.Font(fontFamily, charHeight, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel))
-                using (var brush = System.Drawing.Brushes.White)
-                using (var sf = new System.Drawing.StringFormat())
+
+                Font font = new Font(fontFamily, charHeight, System.Drawing.FontStyle.Regular, GraphicsUnit.Pixel);
+                Brush brush = Brushes.White;
+
+                // StringFormat for centring text in cells
+                StringFormat sf = new StringFormat();
+                sf.Alignment = StringAlignment.Center;
+                sf.LineAlignment = StringAlignment.Center;
+
+                // Render chars in cell between grid lines
+                for (int i = 0; i < 256; i++)
                 {
-                    sf.Alignment = System.Drawing.StringAlignment.Center;
-                    sf.LineAlignment = System.Drawing.StringAlignment.Center;
+                    if (i < charsFrom || i > charsTo) continue;
+                    int col = i % gridSizeX;
+                    int row = i / gridSizeX;
 
-                    for (int i = 0; i < 256; i++)
-                    {
-                        if (i < charsFrom || i > charsTo) continue;
-                        int col = i % gridSizeX;
-                        int row = i / gridSizeX;
+                    // cell position 
+                    int cellX = col * (gridCellWidth + gridLineWidth) + gridLineWidth;
+                    int cellY = row * (gridCellHeight + gridLineWidth) + gridLineWidth;
 
-                        int cellX = col * (gridCellWidth + gridLineWidth) + gridLineWidth;
-                        int cellY = row * (gridCellHeight + gridLineWidth) + gridLineWidth;
-
-                        System.Drawing.RectangleF cellRect = new System.Drawing.RectangleF(cellX, cellY, gridCellWidth, gridCellHeight);
-                        g.DrawString(((char)i).ToString(), font, brush, cellRect, sf);
-                    }
+                    RectangleF cellRect = new RectangleF(cellX, cellY, gridCellWidth, gridCellHeight);
+                    g.DrawString(((char)i).ToString(), font, brush, cellRect, sf);
                 }
+
+                sf.Dispose();
+                font.Dispose();
             }
 
             // Display in preview
-            var bitmapImage = BitmapSourceConvert.ToBitmapImage(_currentBitmap);
+            var bitmapImage = BitmapSourceConvert.ToBitmapImage(bitmap);
             imgPreview.Source = bitmapImage;
             btnSave.IsEnabled = true;
+
+            txtPNGResolution.Text = bitmap.Width + " x " + bitmap.Height;
 
             _generatedFontName = System.IO.Path.GetFileNameWithoutExtension(_selectedFontPath);
         }
         catch (Exception ex)
         {
-            string errorMsg = $"Error generating preview:\n{ex.Message}\n\nDetails:\nType: {ex.GetType().Name}";
+            string errorMsg = $"Error generating preview:\n{ex.Message}\n\nDetails:\nType: {ex.GetType().Name}\n\n";
+            errorMsg += $"Parameters used:\n";
+            errorMsg += $"  Character Height: {txtCharHeight.Text}\n";
+            errorMsg += $"  Character From: {txtCharFrom.Text}\n";
+            errorMsg += $"  Character To: {txtCharTo.Text}\n";
+            errorMsg += $"  Grid Size X: {txtGridSizeX.Text}\n";
+            errorMsg += $"  Grid Size Y: {txtGridSizeY.Text}\n";
+            errorMsg += $"  Grid Cell X: {txtGridCellX.Text}\n";
+            errorMsg += $"  Grid Cell Y: {txtGridCellY.Text}\n";
+            errorMsg += $"  Grid Lines: {(chkGridLines.IsChecked == true ? "Yes" : "No")}\n";
             if (ex.InnerException != null)
             {
                 errorMsg += $"\nInner: {ex.InnerException.Message}";
