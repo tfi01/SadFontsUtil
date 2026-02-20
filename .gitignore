@@ -7,6 +7,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/Dotnet.gitignore
 
+# Claude Code files
+claude*.*
+CLAUDE*.md
+.claude/
+CLAUDE.local.md
+
 # Visual Studio
 .vs/
 *.suo

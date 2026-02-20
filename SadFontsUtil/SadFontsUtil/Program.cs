@@ -184,9 +184,9 @@ class Program
                     return;
                 }
 
-                if (charsFrom < 0 || charsTo > 255 || charsFrom > charsTo)
+                if (charsFrom < 0 || charsTo > 256 || charsFrom > charsTo)
                 {
-                    Console.WriteLine("Error: Character range must be between 0-255 and from <= to.");
+                    Console.WriteLine("Error: Character range must be between 0-256 and from <= to.");
                     return;
                 }
             }
@@ -424,7 +424,7 @@ class Program
             bitmap.Save(outputPNGName, ImageFormat.Png);
             bitmap.Dispose();
             fontCollection.Dispose();
-            Console.WriteLine($"Font metadata saved to {outputFONTName}");
+            Console.WriteLine($"Font image saved to {outputPNGName}");
         }
         catch (Exception ex)
         {
@@ -442,6 +442,7 @@ class Program
   ""GlyphWidth"": {gridCellWidth},
   ""Columns"": {gridSizeX},
   ""IsSadExtended"": true
+  ""SolidGlyphIndex"": 219
 }}");
             Console.WriteLine($"Font metadata saved to {outputFONTName}");
         }
