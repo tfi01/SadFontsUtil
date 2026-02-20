@@ -1,0 +1,166 @@
+<Window x:Class="SadFontsUtilGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SadFontsUtil - Font Generator" Height="700" Width="800"
+        ResizeMode="CanResize" WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="111*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <!--<RowDefinition Height="*"/>-->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Font Selection -->
+        <GroupBox Header="Font Source" Margin="0,0,0,10" Padding="5" Grid.ColumnSpan="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="txtFontPath" Grid.Column="0" Margin="0,0,5,0" IsReadOnly="True"/>
+                <Button x:Name="btnBrowse" Grid.Column="1" Content="Browse..." Width="80" Click="BtnBrowse_Click"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Parameters -->
+        <GroupBox Header="Settings" Margin="0,0,0,10" Padding="5" Grid.Row="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Character Height -->
+                <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,0,5">
+                    <Label Content="Character Height (px):" Width="258" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="txtCharHeight" Text="16" Width="100" HorizontalAlignment="Left" TextChanged="txtCharHeight_TextChanged"/>
+                </StackPanel>
+
+                <!-- Character Range - Separate fields -->
+                <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,0,0,5">
+                    <Label Content="Character Range:" Margin="0,0,0,3"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <TextBox x:Name="txtCharFrom" Text="32" Width="50" Margin="0,0,5,0" TextChanged="txtCharFrom_TextChanged"/>
+                        <TextBlock Text="-" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBox x:Name="txtCharTo" Text="126" Width="50" TextChanged="txtCharTo_TextChanged"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Grid Size - Separate fields -->
+                <StackPanel Grid.Column="0" Grid.Row="2" Margin="0,0,0,5">
+                    <Label Content="Grid Size:" Margin="0,0,0,3"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <TextBox x:Name="txtGridSizeX" Text="16" Width="50" Margin="0,0,5,0" TextChanged="txtGridSizeX_TextChanged"/>
+                        <TextBlock Text="x" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBox x:Name="txtGridSizeY" Text="16" Width="50" TextChanged="txtGridSizeY_TextChanged"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Grid Cell Size - Separate fields -->
+                <StackPanel Grid.Column="0" Grid.Row="3" Margin="0,0,0,5">
+                    <Label Content="Grid Cell Size:" Margin="0,0,0,3"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <TextBox x:Name="txtGridCellX" Text="8" Width="50" Margin="0,0,5,0" TextChanged="txtGridCellX_TextChanged"/>
+                        <TextBlock Text="x" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBox x:Name="txtGridCellY" Text="16" Width="50" TextChanged="txtGridCellY_TextChanged"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Grid Lines -->
+                <StackPanel Grid.Column="0" Grid.Row="4" Margin="0,0,0,5" Orientation="Horizontal">
+                    <CheckBox x:Name="chkGridLines" IsChecked="True" Content="Show grid lines" Margin="0,0,10,0" Click="chkGridLines_Click"/>
+                </StackPanel>
+
+                <!-- Save Button -->
+                <StackPanel Grid.Row="6" Grid.ColumnSpan="2">
+                    <Button x:Name="btnSave" Content="SAVE" Width="100" Height="35"
+                        Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                        Click="BtnSave_Click" IsEnabled="False"/>
+                    <TextBlock Text=" generates PNG and FONT files" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="Gray" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+
+                <!-- Font file label -->
+                <StackPanel Grid.Column="0" Grid.Row="5" Margin="0,10,0,0">
+                    <Label Content="Selected Font:" Margin="0,0,0,3" FontWeight="Bold"/>
+                    <TextBlock x:Name="txtSelectedFont" Text="None" Foreground="Gray" FontStyle="Italic"/>
+                    <Label Content="Image resolution:" Margin="0,0,0,3" FontWeight="Bold"/>
+                    <TextBlock x:Name="txtPNGResolution" Text="None" Foreground="Gray" FontStyle="Italic"/>
+                </StackPanel>
+
+                <!-- Preview Scale -->
+                <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,0,0,5">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Preview Scale (%):" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Value, ElementName=sldPreviewScale, StringFormat={}{0:F2}%}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Slider x:Name="sldPreviewScale" Minimum="10" Maximum="200" Value="100" Width="150" Thumb.DragCompleted="SldPreviewScale_DragCompleted"/>
+                </StackPanel>
+
+                <!-- Generate Button -->
+                <Button x:Name="btnGenerate" Grid.Column="1" Grid.Row="1" Content="Generate Preview" Width="120"
+                        Height="30" Margin="0,5,0,0" Click="BtnGenerate_Click"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Preview Area -->
+        <GroupBox Header="Preview" Margin="0,0,0,10" Padding="5" Grid.Row="1" Grid.Column="1" Grid.RowSpan="1" Grid.ColumnSpan="1">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                          Background="#000000" Margin="0,0,0,10">
+                <Image x:Name="imgPreview" Width="Auto" Height="Auto" Stretch="None" RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <ScaleTransform x:Name="previewScaleTransform" ScaleX="1" ScaleY="1"/>
+                    </Image.RenderTransform>
+                </Image>
+            </ScrollViewer>
+        </GroupBox>
+
+        <StackPanel Grid.Row="3" Grid.ColumnSpan="2">
+            <TextBlock Foreground="DarkBlue" Text="SadFontsUtil is a tool for generating bitmap fonts from TrueType/OpenType font files. It creates a PNG image containing the font glyphs and a corresponding FONT file with metadata." TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock>
+                <Hyperlink NavigateUri="https://github.com/tfi01/SadFontsUtil" 
+                   RequestNavigate="Hyperlink_RequestNavigate">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" Width="16" Height="16" Margin="0,0,5,0"/>
+                        <TextBlock Text="SadFontsUtil on Github" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock Margin="0,10,0,0"                        
+                       Foreground="DarkBlue"
+                       FontStyle="Italic"
+                       FontSize="12">
+                <Run Text="Special thanks to "/>
+                <Run Text="Thraka"
+                     FontWeight="Bold"
+                     Foreground="Navy"/>
+                <Run Text=", creator of SadConsole – "/>
+                <Hyperlink NavigateUri="https://github.com/Thraka/SadConsole" 
+                           RequestNavigate="Hyperlink_RequestNavigate">
+                    <Run Text="github.com/Thraka/SadConsole"/>
+                </Hyperlink>
+                <LineBreak/>
+                <Run Text="Thanks to you, the console freaks, MonoGame devs, and roguelike community have an "/>
+                <Run Text="incredible tool"
+                     FontWeight="SemiBold"/>
+                <Run Text=" for crafting old-school masterpieces! "/>
+                <Run FontSize="11">🎮</Run>
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</Window>
