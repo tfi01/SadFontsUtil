@@ -1,8 +1,22 @@
 # SadFontsUtil
 
-A command-line utility for generating bitmap font sprite sheets compatible with [SadConsole](https://sadconsole.com/), a .NET-based ASCII/ANSI console engine for roguelikes and text-based games.
+A utility for generating bitmap font sprite sheets compatible with [SadConsole](https://sadconsole.com/), a .NET-based ASCII/ANSI console engine for roguelikes and text-based games.
 
-## Features
+## Available Versions
+
+This repository provides **two versions** of the tool:
+
+### 🖥️ SadFontsUtil (CLI)
+A command-line utility for generating bitmap font sprite sheets. Ideal for automation, scripting, and advanced users who prefer terminal-based workflows.
+
+### 🪟 SadFontsUtilGUI (WPF)
+A Windows Presentation Foundation (WPF) application with an easy-to-use graphical interface. Designed for Windows users who prefer a visual, point-and-click experience.
+
+---
+
+## SadFontsUtil CLI
+
+### Features
 
 - ✨ Convert any TrueType Font (TTF) to a SadConsole-compatible sprite sheet
 - 🎨 Automatically generates both PNG and `.font` metadata files
@@ -11,15 +25,15 @@ A command-line utility for generating bitmap font sprite sheets compatible with 
 - 🎯 Character range filtering (render only specific ASCII ranges)
 - 🖼️ Built-in preview support
 
-## Requirements
+### Requirements
 
 - Windows OS
 - .NET 8.0 or later
 - `System.Drawing.Common` package
 
-## Installation
+### Installation
 
-### Build from source
+#### Build from source
 
 ```bash
 git clone https://github.com/yourusername/SadFontsUtil.git
@@ -50,3 +64,33 @@ These fonts are provided in TrueType (.ttf) format and work perfectly with SadFo
 **Example with Ultimate Oldschool PC Font Pack:**
 ```bash
 SadFontsUtil.exe --font "Px437_IBM_VGA_8x16.ttf" --gridcell 8x16 --gridlines --preview
+```
+
+---
+
+## SadFontsUtilGUI (WPF)
+
+A graphical user interface version of SadFontsUtil built with Windows Presentation Foundation (WPF). Provides an intuitive, user-friendly interface for Windows users who prefer visual tools over command-line.
+
+### Features
+
+- 🖱️ Easy-to-use graphical interface
+- 📁 Font file selection via file browser dialog
+- 📏 Visual configuration of grid dimensions and cell sizes
+- 👁️ Real-time preview of generated sprite sheet
+- 💾 One-click generation and save
+
+### Requirements
+
+- Windows OS
+- .NET 8.0 or later
+
+### Installation
+
+#### Build from source
+
+```bash
+git clone https://github.com/yourusername/SadFontsUtil.git
+cd SadFontsUtilGUI
+dotnet build -c Release
+```
